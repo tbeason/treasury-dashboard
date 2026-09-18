@@ -203,6 +203,8 @@ TEMPLATE = r"""<!doctype html>
 <meta property="og:title" content="Treasury expected returns">
 <meta property="og:description" content="Daily expected excess returns across the Treasury curve, from a model with one fixed parameter.">
 <meta property="og:type" content="website">
+<!-- unlisted for now: drop this line (and robots.txt) when the page is linked publicly -->
+<meta name="robots" content="noindex, nofollow">
 <style>
 :root {
   color-scheme: light;
