@@ -19,7 +19,9 @@ from . import config, model, refs
 
 HISTORY_NAME = "forecast_history.csv"
 STALE_BUSINESS_DAYS = 3
-SITE_URL = "https://tbeason.github.io/treasury-dashboard/"
+# project Pages sites inherit the account custom domain (tbeason.com);
+# the tbeason.github.io address 301-redirects here
+SITE_URL = "https://tbeason.com/treasury-dashboard/"
 
 
 def _r(x, nd=6):

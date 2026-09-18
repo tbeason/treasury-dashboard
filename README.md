@@ -4,7 +4,7 @@ A daily dashboard of expected excess returns on 2, 5, 10, 20 and 30-year
 Treasuries, at 1-, 3- and 12-month horizons, from a forecasting model whose
 only parameter is fixed in advance.
 
-**[View the dashboard →](https://tbeason.github.io/treasury-dashboard/)**
+**[View the dashboard →](https://tbeason.com/treasury-dashboard/)**
 
 ## The model
 
