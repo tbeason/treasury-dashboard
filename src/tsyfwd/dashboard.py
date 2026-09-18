@@ -324,7 +324,7 @@ footer a { color: var(--ink-2); }
     <h2 id="tbl-title"></h2>
     <div class="sub" style="font-size:12.5px">Frozen model: carry and roll-down over the risk-free rate plus a φ = 0.15 pull of yields toward the inflation anchors. All returns are for the holding period, not annualized unless labeled.</div>
     <div class="tablewrap"><table id="tbl"></table></div>
-    <p class="note">Volatility σ is the research RM2 model on the live curve: modified duration × the 60-month rolling volatility of monthly par-yield changes, scaled by √h. Excess ÷ σ is the conditional Sharpe ratio for the holding period. Yield cushion is the same expected excess divided by modified duration — the parallel yield rise that would erase it, in bp; equivalently, 1 bp of cushion is 0.01% of expected return per year of duration. Changes are in the expected excess return.</p>
+    <p class="note">Volatility σ is the research RM2 model on the live curve: modified duration × the 60-month rolling volatility of monthly par-yield changes, scaled by √h. Excess ÷ σ is the conditional Sharpe ratio for the holding period. Yield cushion is the same expected excess divided by modified duration — the parallel yield rise that would erase it, in bp; equivalently, 1 bp of cushion is 0.01% of expected return per year of duration. Changes are in the expected excess return. Coupons received during the holding period are held as cash, not reinvested, which understates the 12-month figures by roughly 5 bp at current short rates (no coupon is received at all within 1 or 3 months).</p>
   </div>
 
   <div class="card">

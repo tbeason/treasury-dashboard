@@ -3,6 +3,10 @@
 For a par bond issued at t with tenor N years and coupon c (pct), held h
 months (h in {1,3,12}):
 - coupons received in the window: c/2 per payment date 6j <= h
+- coupons received are added at face value and NOT reinvested: the h-month
+  return treats them as idle cash. The realized-return target in the
+  research uses the same convention, so forecast and target agree; it costs
+  ~5bp of level at h=12 and nothing at h<6, where no coupon is received.
 - remaining flows at the pricing date sit at months 6j - h (coupons with
   6j > h) plus principal at 12N - h; all integer monthly maturities
 - P_aged(t)   prices those flows on the curve at t   -> carry+rolldown
