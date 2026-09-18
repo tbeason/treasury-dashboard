@@ -1,0 +1,65 @@
+name: Build and publish dashboard
+
+on:
+  schedule:
+    # 22:45 UTC on weekdays = 6:45pm EDT / 5:45pm EST, after Treasury posts
+    # the day's par yield curve, so the page shows the same-day close
+    - cron: "45 22 * * 1-5"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# never let two builds deploy at once; let a running one finish first
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TZ: America/New_York
+      FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --extra dev
+
+      - name: Test
+        run: uv run pytest -q
+
+      # the Treasury files for past years never change; only the current
+      # year is refetched, so a warm cache means one download per run
+      - name: Restore data cache
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: tsyfwd-cache-${{ github.run_id }}
+          restore-keys: tsyfwd-cache-
+
+      - name: Build
+        run: uv run scripts/build.py
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
