@@ -299,11 +299,38 @@ footer a { color: var(--ink-2); }
   .grid2 { grid-template-columns: 1fr; }
   .anchors { grid-template-columns: repeat(3, minmax(0,1fr)); }
 }
-@media (max-width: 520px) {
+details.sect > summary {
+  font-size: 15px; font-weight: 600; cursor: pointer; list-style: none;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+details.sect > summary::-webkit-details-marker { display: none; }
+details.sect > summary::after {
+  content: "+"; color: var(--muted); font-weight: 400; font-size: 17px; line-height: 1;
+}
+details.sect[open] > summary::after { content: "−"; }
+details.sect:not([open]) { padding-bottom: 13px; }
+.note-sect { border: 0; background: none; padding: 0; margin-top: 6px; }
+.note-sect > summary { font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.note-sect > p { margin: 4px 0 0; }
+@media (min-width: 641px) {
+  /* match the [open] rule's specificity, or the marker survives on desktop */
+  details.sect > summary { cursor: default; }
+  details.sect > summary::after,
+  details.sect[open] > summary::after { content: none; }
+}
+@media (max-width: 640px) {
   body { padding-left: 16px; padding-right: 16px; }
-  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  h1 { font-size: 20px; }
+  .controls { gap: 8px 14px; margin: 14px 0 12px; }
+  .ctl > span { font-size: 12px; }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .tile { padding: 10px 12px; }
+  .tile .val { font-size: 22px; }
+  .tile .lab, .tile .meta { font-size: 12px; }
   .anchors { grid-template-columns: repeat(2, minmax(0,1fr)); }
-  .chart { height: 220px; }
+  .chart { height: 210px; }
+  .card { padding: 12px 13px 10px; }
+  th, td { padding: 6px 8px; }
 }
 </style>
 </head>
@@ -326,9 +353,11 @@ footer a { color: var(--ink-2); }
 
   <div class="card">
     <h2 id="tbl-title"></h2>
-    <div class="sub" style="font-size:12.5px">Frozen model: carry and roll-down over the risk-free rate plus a φ = 0.15 pull of yields toward the inflation anchors. All returns are for the holding period, not annualized unless labeled.</div>
+    <div class="sub" style="font-size:12.5px" id="tbl-sub"></div>
     <div class="tablewrap"><table id="tbl"></table></div>
+    <details class="sect note-sect"><summary>What these columns mean</summary>
     <p class="note">Volatility σ is the research RM2 model on the live curve: modified duration × the 60-month rolling volatility of monthly par-yield changes, scaled by √h. Excess ÷ σ is the conditional Sharpe ratio for the holding period. Yield cushion is the same expected excess divided by modified duration — the parallel yield rise that would erase it, in bp; equivalently, 1 bp of cushion is 0.01% of expected return per year of duration. Changes are in the expected excess return. Coupons received during the holding period are held as cash, not reinvested, which understates the 12-month figures by roughly 5 bp at current short rates (no coupon is received at all within 1 or 3 months).</p>
+    </details>
   </div>
 
   <div class="card">
@@ -337,33 +366,33 @@ footer a { color: var(--ink-2); }
     <div class="chart" id="c1"></div>
   </div>
 
-  <div class="card">
-    <h2 id="c4-title"></h2>
+  <details class="card sect">
+    <summary id="c4-title"></summary>
     <div class="sub" style="font-size:12.5px">Expected excess return per unit of RM2 volatility. Rises when yields are high relative to the inflation anchors, or when rate volatility falls.</div>
     <div class="legend" id="c4-legend"></div>
     <div class="chart" id="c4"></div>
-  </div>
+  </details>
 
   <div class="grid2">
-    <div class="card">
-      <h2 id="c2-title"></h2>
+    <details class="card sect">
+      <summary id="c2-title"></summary>
       <div class="legend" id="c2-legend"></div>
       <div class="chart" id="c2"></div>
-    </div>
-    <div class="card">
-      <h2>Rate anchors</h2>
+    </details>
+    <details class="card sect">
+      <summary>Rate anchors</summary>
       <div class="legend" id="c3-legend"></div>
       <div class="chart" id="c3"></div>
-    </div>
+    </details>
   </div>
 
-  <div class="card">
-    <h2>Anchors today</h2>
+  <details class="card sect">
+    <summary>Anchors today</summary>
     <div class="anchors" id="anchors"></div>
     <p class="note">The rate-gap term uses the 10-year zero yield minus trend inflation τ (EWMA of core CPI yoy, ν = 0.987) and each tenor's own zero yield minus current core CPI yoy π, averaged with equal weights.</p>
-  </div>
+  </details>
 
-  <div class="card model" id="model"></div>
+  <details class="card sect model" id="model"></details>
 
   <footer>
     <p><strong>Not investment advice.</strong> This page is research output: a fixed model applied to public data, published so its forecasts can be watched in real time. It makes no recommendation, and the synthetic par bonds it prices ignore financing, bid-offer and taxes.</p>
@@ -380,6 +409,7 @@ const TENOR_COLORS = ["--s1", "--s2", "--s3", "--s4", "--s5"];
 const state = { h: "12", range: "1Y", tenor: "10", cols: "key" };
 const RANGES = { "3M": 92, "6M": 183, "1Y": 366, "3Y": 1100 };
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const isPhone = () => window.matchMedia("(max-width: 640px)").matches;
 const pct = (x, nd = 2) => x == null ? "–" : (x >= 0 ? "+" : "−") + Math.abs(100 * x).toFixed(nd) + "%";
 const pctPlain = (x, nd = 2) => x == null ? "–" : (100 * x).toFixed(nd) + "%";
 const axisPct = (v, nd) => (v < -1e-12 ? "−" : "") + Math.abs(100 * v).toFixed(nd) + "%";
@@ -448,25 +478,31 @@ function renderTiles() {
 function renderTable() {
   const h = state.h;
   document.getElementById("tbl-title").textContent = `Expected ${hLabel(h)} returns`;
+  const anyTenor = D.current[h][String(D.tenors[0])];
+  const rf = anyTenor ? anyTenor.rf : null;
+  document.getElementById("tbl-sub").textContent =
+    `Excess returns are over the ${hLabel(h)} risk-free rate, ${pctPlain(rf)} today (the ${h}-month zero). `
+    + "Carry and roll-down plus a φ = 0.15 pull of yields toward the inflation anchors, for the holding period, not annualized unless labeled.";
   const tbl = document.getElementById("tbl"); tbl.replaceChildren();
   // key columns always show; the rest (decomposition, other change windows,
   // par coupon) only under Columns: All, so the default table fits the width
+  const phone = isPhone();
   const COLS = [
     ["Tenor", c => c.tenor, "", true],
     ["Expected excess", c => pct(c.yhat), "em", true],
-    ["Annualized", c => pct(c.ann), "", true],
-    ["Expected total", c => pct(c.total), "", true],
+    ["Annualized", c => pct(c.ann), "", !phone],
+    ["Expected total", c => pct(c.total), "", !phone],
     ["Carry + roll − rf", c => pct(c.m0), "", false],
     ["Rate-gap tilt", c => pct(c.tilt), "", false],
     ["Volatility σ", c => c.sigma == null ? "–" : pctPlain(c.sigma), "", true],
     ["Excess ÷ σ", c => c.sharpe == null ? "–" : c.sharpe.toFixed(2), "em", true],
-    ["Yield cushion", c => (c.breakeven_bp >= 0 ? "" : "−") + Math.abs(c.breakeven_bp).toFixed(0) + " bp", "", true],
+    ["Yield cushion", c => (c.breakeven_bp >= 0 ? "" : "−") + Math.abs(c.breakeven_bp).toFixed(0) + " bp", "", !phone],
     ["Δ 1d", c => bp(c.d1), "", false],
-    ["Δ 1w", c => bp(c.d1w), "", true],
+    ["Δ 1w", c => bp(c.d1w), "", !phone],
     ["Δ 1m", c => bp(c.d1m), "", false],
-    ["Zero yield", c => pctPlain(c.z_n), "", true],
+    ["Zero yield", c => pctPlain(c.z_n), "", !phone],
     ["Par coupon", c => pctPlain(c.coupon), "", false],
-    ["Mod. duration", c => c.dur.toFixed(2), "", true],
+    ["Mod. duration", c => c.dur.toFixed(2), "", !phone],
   ].filter(([, , , key]) => key || state.cols === "all");
   const tr = el("tr"); COLS.forEach(([name]) => tr.append(el("th", { scope: "col" }, name)));
   const thead = el("thead"); thead.append(tr); tbl.append(thead);
@@ -643,7 +679,7 @@ function renderAnchors() {
 
 function renderModel() {
   const box = document.getElementById("model"); box.replaceChildren();
-  box.append(el("h2", {}, "Model card"));
+  box.append(el("summary", {}, "Model card"));
   box.append(el("div", { class: "formula" }, "E[rx] = (carry + roll − rf) + [1 − (1 − φ)^(h/12)] · D · ½[(y_10Y − τ) + (y_N − π)],   φ = " + D.phi));
   box.append(el("p", {}, "Nothing is estimated: φ is frozen at 0.15/yr, the anchor weights are equal, and τ is a fixed EWMA of core CPI. The zero curve is bootstrapped each day from the Treasury par yield curve (PCHIP interpolation); core CPI (NSA) comes from FRED, with BLS as a fallback."));
   const M = D.model;
@@ -671,9 +707,24 @@ function renderModel() {
   }
 }
 
+function syncSections() {
+  const phone = isPhone();
+  document.querySelectorAll("details.sect").forEach(d => { d.open = !phone; });
+}
+document.querySelectorAll("details.sect").forEach(d =>
+  d.addEventListener("toggle", () => { if (d.open) renderCharts(); }));
+
 function renderAll() { renderTiles(); renderTable(); renderCharts(); renderAnchors(); renderModel(); }
+syncSections();
 renderAll();
-let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(renderCharts, 120); });
+let rt, wasPhone = isPhone();
+window.addEventListener("resize", () => {
+  clearTimeout(rt);
+  rt = setTimeout(() => {
+    if (isPhone() !== wasPhone) { wasPhone = isPhone(); syncSections(); renderAll(); }
+    else renderCharts();
+  }, 120);
+});
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderAll);
 })();
 </script>
