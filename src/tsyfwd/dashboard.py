@@ -481,7 +481,7 @@ function renderTable() {
   const anyTenor = D.current[h][String(D.tenors[0])];
   const rf = anyTenor ? anyTenor.rf : null;
   document.getElementById("tbl-sub").textContent =
-    `Excess returns are over the ${hLabel(h)} risk-free rate, ${pctPlain(rf)} today (the ${h}-month zero). `
+    `Excess returns are over the ${hLabel(h)} risk-free rate, ${pctPlain(rf)} today (the ${h}-month Treasury bill). `
     + "Carry and roll-down plus a φ = 0.15 pull of yields toward the inflation anchors, for the holding period, not annualized unless labeled.";
   const tbl = document.getElementById("tbl"); tbl.replaceChildren();
   // key columns always show; the rest (decomposition, other change windows,
