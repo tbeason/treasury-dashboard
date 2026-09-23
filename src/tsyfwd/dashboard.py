@@ -366,7 +366,8 @@ td .tn { font-weight: 400; font-size: 13px; gap: 8px; }
 }
 .foot .label { color: var(--ink); margin-bottom: 8px; }
 .foot p { margin: 0 0 6px; text-wrap: pretty; }
-.formula { font: 12px var(--mono); color: var(--ink); margin-bottom: 8px; overflow-x: auto; white-space: nowrap; }
+.formula { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; font: 12px/1.6 var(--mono); color: var(--ink); margin: 0 0 10px; white-space: nowrap; }
+.formula sub, .formula sup { font-size: .75em; line-height: 0; }
 details.more { margin: 0 32px 32px; border-top: 1px solid var(--grid); }
 details.more > summary {
   list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
@@ -438,6 +439,8 @@ details.more table { margin: 6px 0 10px; }
   th, td { padding: 7px 6px; }
   table { font-size: 12px; }
   .foot { grid-template-columns: 1fr; padding: 20px 16px; gap: 18px; }
+  .formula { font-size: 11px; gap: 2px 6px; }
+  .formula .fw { display: block; padding-left: 2ch; }
   details.more { margin: 0 16px 24px; }
 }
 @media (prefers-reduced-motion: reduce) { .focus { transition: none; } }
@@ -508,7 +511,11 @@ details.more table { margin: 6px 0 10px; }
   <footer class="foot">
     <div>
       <div class="label">Model</div>
-      <div class="formula">E[rx] = (carry + roll − rf) + [1 − (1 − φ)^(h/12)] · D · ½[(y₁₀ − τ) + (y_N − π)]</div>
+      <div class="formula" id="formula" role="math" aria-label="Expected excess return equals carry plus roll minus the risk-free rate, plus phi-h times duration times half the sum of the cycle gap and the value gap, where phi-h equals one minus one minus phi to the power h over 12">
+        <span>E[rx]</span><span>= (carry + roll − rf)</span>
+        <span></span><span>+ φ<sub>h</sub> · D · <span class="fw">½[(y<sub>10</sub> − τ) + (y<sub>N</sub> − π)]</span></span>
+        <span>φ<sub>h</sub></span><span>= 1 − (1 − φ)<sup>h/12</sup>,  φ = 0.15</span>
+      </div>
       <p>Nothing is estimated: φ is frozen at 0.15/yr, the anchor weights are equal, and τ is a fixed EWMA of core CPI. The zero curve is bootstrapped daily from the Treasury par curve (PCHIP interpolation).</p>
     </div>
     <div>
@@ -902,7 +909,7 @@ function renderModel() {
     track.append(document.createTextNode(`Regime B̂/2 = ${M.regime.half_B.toFixed(3)} (${M.regime.month}), ${inBand ? "inside" : "OUTSIDE"} ${lo.toFixed(2)}–${hi.toFixed(2)}.`));
   }
   const box = document.getElementById("model-body"); box.replaceChildren();
-  box.append(el("div", { class: "formula" }, "E[rx] = (carry + roll − rf) + [1 − (1 − φ)^(h/12)] · D · ½[(y_10Y − τ) + (y_N − π)],   φ = " + D.phi));
+  const fm = document.getElementById("formula").cloneNode(true); fm.removeAttribute("id"); box.append(fm);
   box.append(el("p", {}, "Nothing is estimated: φ is frozen at 0.15/yr, the anchor weights are equal, and τ is a fixed EWMA of core CPI. The zero curve is bootstrapped each day from the Treasury par yield curve (PCHIP interpolation); core CPI (NSA) comes from FRED, with BLS as a fallback."));
   if (M.oos) {
     box.append(el("p", {}, `Out-of-sample R² vs the real-time mean, ${M.oos_sample} sample, on the research (Liu-Wu) curve, with the carry-only model in parentheses. These are fixed properties of the study, not recomputed daily:`));
