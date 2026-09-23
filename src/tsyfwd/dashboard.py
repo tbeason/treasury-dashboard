@@ -459,7 +459,7 @@ details.more table { margin: 6px 0 10px; }
 
   <div class="hero">
     <div>
-      <div class="hh"><span class="label">Expected excess return · horizon × tenor</span><span class="small">shade = excess ÷ σ · orange if negative</span></div>
+      <div class="hh"><span class="label">Expected excess return · horizon × tenor</span><span class="small">shade = excess ÷ σ</span></div>
       <div class="mx" id="matrix" role="group" aria-label="Horizon and tenor"></div>
       <div class="small" style="margin-top:10px">Select a cell to focus it · cell footer: excess ÷ σ and 1-week change</div>
     </div>
