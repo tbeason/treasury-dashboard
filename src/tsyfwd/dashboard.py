@@ -459,7 +459,7 @@ details.more table { margin: 6px 0 10px; }
 
   <div class="hero">
     <div>
-      <div class="hh"><span class="label">Expected excess return · horizon × tenor</span><span class="small">shade = excess ÷ σ</span></div>
+      <div class="hh"><span class="label">Expected excess return · horizon × tenor</span><span class="small">shade = excess ÷ σ · orange if negative</span></div>
       <div class="mx" id="matrix" role="group" aria-label="Horizon and tenor"></div>
       <div class="small" style="margin-top:10px">Select a cell to focus it · cell footer: excess ÷ σ and 1-week change</div>
     </div>
@@ -605,8 +605,9 @@ function select(h, t) { state.h = String(h); state.tenor = String(t); renderAll(
 
 function renderMatrix() {
   const box = document.getElementById("matrix"); box.replaceChildren();
+  // diverging shade: blue for positive excess ÷ σ, orange for negative, both scaled by |SR|
   let maxSr = 0;
-  D.horizons.forEach(h => D.tenors.forEach(t => { const c = D.current[String(h)][String(t)]; if (c && c.sharpe != null) maxSr = Math.max(maxSr, c.sharpe); }));
+  D.horizons.forEach(h => D.tenors.forEach(t => { const c = D.current[String(h)][String(t)]; if (c && c.sharpe != null) maxSr = Math.max(maxSr, Math.abs(c.sharpe)); }));
   box.append(el("span"));
   D.tenors.forEach(t => { const s = el("span", { class: "ch" }); s.append(keyEl(tenorColor(t)), document.createTextNode(t + "Y")); box.append(s); });
   D.horizons.forEach(h => {
@@ -615,8 +616,9 @@ function renderMatrix() {
       const c = D.current[String(h)][String(t)];
       const on = String(h) === state.h && String(t) === state.tenor;
       const b = el("button", { type: "button", class: "cell", "aria-pressed": String(on), "aria-label": `${t}-year, ${h}-month` });
-      const a = c && c.sharpe != null && maxSr > 0 ? Math.min(0.92, Math.max(0.08, 0.08 + 0.84 * c.sharpe / maxSr)) : 0.04;
-      b.style.background = `oklch(0.52 0.13 252 / ${a.toFixed(2)})`;
+      const a = c && c.sharpe != null && maxSr > 0 ? Math.min(0.92, 0.08 + 0.84 * Math.abs(c.sharpe) / maxSr) : 0.04;
+      const hue = c && c.sharpe < 0 ? "0.55 0.15 45" : "0.52 0.13 252";
+      b.style.background = `oklch(${hue} / ${a.toFixed(2)})`;
       b.style.color = a > 0.5 ? "#ffffff" : css("--ink");
       b.append(el("span", { class: "v" }, c ? pct(c.yhat) : "–"));
       const f = el("span", { class: "f" });
